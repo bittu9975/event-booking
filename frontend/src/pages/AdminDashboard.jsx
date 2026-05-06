@@ -22,7 +22,16 @@ const CATEGORIES = ['Technology', 'Music', 'Business', 'Sports', 'Entertainment'
 
 export default function AdminDashboard() {
   const [tab, setTab] = useState('overview')
-  const [stats, setStats] = useState(null)
+  const [stats, setStats] = useState({
+  totalUsers: 0,
+  totalEvents: 0,
+  totalBookings: 0,
+  activeBookings: 0,
+  totalRevenue: 0,
+  bookingsByMonth: [],
+  topEvents: [],
+  revenueByCategory: []
+})
   const [events, setEvents] = useState([])
   const [bookings, setBookings] = useState([])
   const [loading, setLoading] = useState(true)
@@ -37,7 +46,7 @@ export default function AdminDashboard() {
       eventService.getAll({ size: 100 }),
       adminService.getAllBookings(),
     ]).then(([statsRes, eventsRes, bookingsRes]) => {
-      setStats(statsRes.data)
+      setStats(prev => ({ ...prev, ...statsRes.data }))
       setEvents(eventsRes.data.content)
       setBookings(bookingsRes.data)
     }).catch(() => toast.error('Failed to load dashboard'))
@@ -153,7 +162,7 @@ export default function AdminDashboard() {
             <div className="card p-6">
               <h3 className="font-semibold text-gray-900 mb-4">Monthly Bookings (This Year)</h3>
               <ResponsiveContainer width="100%" height={220}>
-                <BarChart data={stats?.bookingsByMonth || []}>
+                <BarChart data={stats.bookingsByMonth || []}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                   <XAxis dataKey="month" tick={{ fontSize: 12 }} />
                   <YAxis tick={{ fontSize: 12 }} />
@@ -169,7 +178,7 @@ export default function AdminDashboard() {
               <ResponsiveContainer width="100%" height={220}>
                 <PieChart>
                   <Pie
-                    data={stats?.revenueByCategory || []}
+                    data={stats.revenueByCategory || []}
                     dataKey="revenue"
                     nameKey="category"
                     cx="50%" cy="50%"
@@ -178,7 +187,7 @@ export default function AdminDashboard() {
                       `${category} ${(percent * 100).toFixed(0)}%`
                     }
                   >
-                    {(stats?.revenueByCategory || []).map((_, i) => (
+                    {(stats.revenueByCategory || []).map((_, i) => (
                       <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
                     ))}
                   </Pie>
@@ -192,7 +201,7 @@ export default function AdminDashboard() {
           <div className="card p-6">
             <h3 className="font-semibold text-gray-900 mb-4">Top Events by Bookings</h3>
             <div className="space-y-3">
-              {(stats?.topEvents || []).map((ev, i) => (
+              {(stats.topEvents || []).map((ev, i) => (
                 <div key={i} className="flex items-center gap-3">
                   <span className="text-sm font-bold text-gray-400 w-5">#{i + 1}</span>
                   <div className="flex-1 min-w-0">
