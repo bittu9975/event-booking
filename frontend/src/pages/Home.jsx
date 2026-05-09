@@ -24,8 +24,8 @@ export default function Home() {
         ...(category !== 'All' && { category }),
       }
       const { data } = await eventService.getAll(params)
-      setEvents(data.content)
-      setTotalPages(data.totalPages)
+      setEvents(Array.isArray(data?.content) ? data.content : [])
+      setTotalPages(data?.totalPages ?? 0)
     } catch {
       toast.error('Failed to load events')
     } finally {

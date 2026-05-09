@@ -2,11 +2,11 @@ import { useState, useEffect } from 'react'
 import { adminService, eventService } from '../services'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, LineChart, Line, Legend
+  PieChart, Pie, Cell
 } from 'recharts'
 import {
   Users, CalendarDays, Ticket, TrendingUp, Plus, Pencil, Trash2,
-  Loader2, X, ChevronDown
+  Loader2, X
 } from 'lucide-react'
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
@@ -23,15 +23,15 @@ const CATEGORIES = ['Technology', 'Music', 'Business', 'Sports', 'Entertainment'
 export default function AdminDashboard() {
   const [tab, setTab] = useState('overview')
   const [stats, setStats] = useState({
-  totalUsers: 0,
-  totalEvents: 0,
-  totalBookings: 0,
-  activeBookings: 0,
-  totalRevenue: 0,
-  bookingsByMonth: [],
-  topEvents: [],
-  revenueByCategory: []
-})
+    totalUsers: 0,
+    totalEvents: 0,
+    totalBookings: 0,
+    activeBookings: 0,
+    totalRevenue: 0,
+    bookingsByMonth: [],
+    topEvents: [],
+    revenueByCategory: []
+  })
   const [events, setEvents] = useState([])
   const [bookings, setBookings] = useState([])
   const [loading, setLoading] = useState(true)
@@ -46,9 +46,19 @@ export default function AdminDashboard() {
       eventService.getAll({ size: 100 }),
       adminService.getAllBookings(),
     ]).then(([statsRes, eventsRes, bookingsRes]) => {
-      setStats(prev => ({ ...prev, ...statsRes.data }))
-      setEvents(eventsRes.data.content)
-      setBookings(bookingsRes.data)
+      const raw = statsRes.data || {}
+      setStats({
+        totalUsers: raw.totalUsers ?? 0,
+        totalEvents: raw.totalEvents ?? 0,
+        totalBookings: raw.totalBookings ?? 0,
+        activeBookings: raw.activeBookings ?? 0,
+        totalRevenue: raw.totalRevenue ?? 0,
+        bookingsByMonth: Array.isArray(raw.bookingsByMonth) ? raw.bookingsByMonth : [],
+        topEvents: Array.isArray(raw.topEvents) ? raw.topEvents : [],
+        revenueByCategory: Array.isArray(raw.revenueByCategory) ? raw.revenueByCategory : [],
+      })
+      setEvents(Array.isArray(eventsRes.data?.content) ? eventsRes.data.content : [])
+      setBookings(Array.isArray(bookingsRes.data) ? bookingsRes.data : [])
     }).catch(() => toast.error('Failed to load dashboard'))
       .finally(() => setLoading(false))
   }, [])
@@ -131,9 +141,8 @@ export default function AdminDashboard() {
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`px-5 py-2 rounded-lg text-sm font-medium transition-colors capitalize ${
-              tab === t ? 'bg-white text-indigo-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'
-            }`}
+            className={`px-5 py-2 rounded-lg text-sm font-medium transition-colors capitalize ${tab === t ? 'bg-white text-indigo-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+              }`}
           >
             {t}
           </button>
